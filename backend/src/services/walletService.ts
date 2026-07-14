@@ -99,8 +99,9 @@ export async function getLedger(
 export async function validateCurrencyBelongsToModule(
   currencyId: number,
   expectedModule: CurrencyModule,
+  transaction?: Transaction,
 ): Promise<Currency> {
-  const currency = await Currency.findByPk(currencyId);
+  const currency = await Currency.findByPk(currencyId, { transaction });
   if (!currency || currency.module !== expectedModule) {
     throw new InvalidCurrencyModuleError(currencyId, expectedModule);
   }

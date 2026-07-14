@@ -58,6 +58,9 @@ function Wallet() {
       <Link to="/buy">
         <button type="button">Buy Credits</button>
       </Link>
+      <Link to="/campaigns">
+        <button type="button">Campaigns</button>
+      </Link>
 
       <h2>Ledger</h2>
       <table>

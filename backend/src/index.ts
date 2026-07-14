@@ -6,6 +6,7 @@ import './models';
 import authRoutes from './routes/auth';
 import walletRoutes from './routes/wallet';
 import paymentRoutes from './routes/payment';
+import campaignRoutes from './routes/campaigns';
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -26,6 +27,7 @@ app.get('/health', (_req, res) => {
 
 app.use('/auth', authRoutes);
 app.use('/wallet', walletRoutes);
+app.use('/campaigns', campaignRoutes);
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);

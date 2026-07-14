@@ -3,6 +3,7 @@ import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Wallet from './pages/Wallet';
 import BuyReturn from './pages/BuyReturn';
+import Campaigns from './pages/Campaigns';
 import BuyCredits from './components/BuyCredits';
 import RequireAuth from './components/RequireAuth';
 
@@ -33,6 +34,14 @@ function App() {
         element={
           <RequireAuth>
             <BuyReturn />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/campaigns"
+        element={
+          <RequireAuth>
+            <Campaigns />
           </RequireAuth>
         }
       />
