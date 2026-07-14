@@ -87,3 +87,32 @@ stripe events resend evt_...
 ```
 
 The second delivery should still return `200`, but the ledger and wallet balance should be unchanged — `stripe_events.stripe_event_id` and `ledger.payment_id` are both unique at the database level, so a duplicate delivery is a no-op rather than a second credit grant.
+
+## Running tests
+
+### Backend
+
+Tests run against a real, separate database (`<DB_NAME>_test`) — the correctness properties under test (idempotency, row locking, concurrent funding) depend on actual transaction and locking behavior that a mocked database can't reproduce.
+
+```bash
+cd backend
+```
+
+```sql
+CREATE DATABASE credit_flow_test;
+```
+
+```bash
+npm test
+```
+
+`npm test` migrates and seeds the test database automatically before running. Webhook signature tests sign their own test events locally using `STRIPE_WEBHOOK_SECRET` from `.env` — no live Stripe account is needed to run the suite.
+
+### Frontend
+
+```bash
+cd frontend
+npm test
+```
+
+Component tests mock the `services/*` API layer rather than hitting a real backend.
