@@ -1,7 +1,9 @@
 import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { UniqueConstraintError } from 'sequelize';
+import { sequelize } from '../database/sequelize';
 import { User } from '../models/User';
+import { initializeWallet } from './walletService';
 
 const SALT_ROUNDS = 12;
 
@@ -36,8 +38,11 @@ export async function signup(email: string, password: string): Promise<Authentic
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
   try {
-    const user = await User.create({ email, passwordHash });
-    return { id: user.id, email: user.email };
+    return await sequelize.transaction(async (transaction) => {
+      const user = await User.create({ email, passwordHash }, { transaction });
+      await initializeWallet(user.id, transaction);
+      return { id: user.id, email: user.email };
+    });
   } catch (error) {
     if (error instanceof UniqueConstraintError) {
       throw new EmailAlreadyRegisteredError();
