@@ -2,6 +2,8 @@
 
 Multi-currency credits wallet and campaign funding platform for an influencer-marketing product. Users buy credits in three independent currencies via Stripe and spend them within their bound modules (e.g. Campaign Credits fund campaigns).
 
+See [DESIGN.md](./DESIGN.md) for the schema, idempotency/transaction design, and critical flow walkthroughs.
+
 ## Structure
 
 - `backend/` — Node.js + TypeScript + Express + Sequelize (MySQL)
@@ -116,3 +118,13 @@ npm test
 ```
 
 Component tests mock the `services/*` API layer rather than hitting a real backend.
+
+## Exercising the app end-to-end
+
+With the backend (`npm run dev` in `backend/`), the frontend (`npm run dev` in `frontend/`), and `stripe listen` (see [Stripe test setup](#stripe-test-setup)) all running:
+
+1. **Sign up** at `http://localhost:5173/signup`. You're logged in immediately and land on the wallet, showing all three currencies at 0.
+2. **Buy 100 Campaign Credits**: click *Buy Credits* → choose *Campaign Credits* → choose the 100-credit plan → *Proceed to Stripe* → pay with `4242 4242 4242 4242` on Stripe's hosted page.
+3. Stripe sends `checkout.session.completed` to your `stripe listen` forwarder, which relays it to `/webhooks/stripe`. Go back to the wallet — Campaign Credits should now read 100, and the ledger for that currency shows one `PURCHASE` entry for +100.
+4. **Fund a campaign**: click *Campaigns* → *New Campaign* → name it → *Fund* → enter an amount up to 100 → *Confirm*. The campaign's status flips to `FUNDED`, and the wallet balance drops by that amount with a matching `CAMPAIGN_SPEND` ledger entry.
+5. Try funding the same campaign again (rejected, already funded), or an amount larger than the remaining balance (rejected, balance untouched) — both surface the backend's error message directly in the fund dialog.
