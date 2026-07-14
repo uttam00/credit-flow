@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { getBalances, getLedger } from '../services/wallet';
 import type { CurrencyBalance, LedgerEntry } from '../types/wallet';
 
@@ -54,9 +55,9 @@ function Wallet() {
           </li>
         ))}
       </ul>
-      <button type="button" disabled title="Coming soon">
-        Buy Credits
-      </button>
+      <Link to="/buy">
+        <button type="button">Buy Credits</button>
+      </Link>
 
       <h2>Ledger</h2>
       <table>

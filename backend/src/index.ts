@@ -5,11 +5,19 @@ import { sequelize } from './database/sequelize';
 import './models';
 import authRoutes from './routes/auth';
 import walletRoutes from './routes/wallet';
+import paymentRoutes from './routes/payment';
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
 
 app.use(cors());
+
+// Mounted before the global JSON body parser: the webhook route needs the
+// raw, unparsed body to verify Stripe's signature, and each route in
+// paymentRoutes declares its own body parser rather than relying on one
+// applied here.
+app.use(paymentRoutes);
+
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
