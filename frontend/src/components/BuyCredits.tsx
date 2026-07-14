@@ -1,20 +1,45 @@
-import { useState } from 'react';
-import { CURRENCY_CATALOG } from '../constants/currencies';
+import { useEffect, useState } from 'react';
+import { getCurrencies } from '../services/currencies';
 import { buyCredits } from '../services/payment';
+import type { CurrencyInfo } from '../types/currency';
 
 function formatRupees(paise: number): string {
   return `₹${(paise / 100).toFixed(2)}`;
 }
 
 function BuyCredits() {
-  const [currencyId, setCurrencyId] = useState(CURRENCY_CATALOG[0].id);
+  const [currencies, setCurrencies] = useState<CurrencyInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const [currencyId, setCurrencyId] = useState<number | null>(null);
   const [mode, setMode] = useState<'plan' | 'quantity'>('plan');
   const [planIndex, setPlanIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const currency = CURRENCY_CATALOG.find((entry) => entry.id === currencyId) ?? CURRENCY_CATALOG[0];
+  useEffect(() => {
+    getCurrencies()
+      .then((data) => {
+        setCurrencies(data);
+        if (data.length > 0) {
+          setCurrencyId(data[0].id);
+        }
+      })
+      .catch(() => setLoadError('Failed to load currencies'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (loadError || currencyId === null) {
+    return <p role="alert">{loadError ?? 'No currencies available'}</p>;
+  }
+
+  const currency = currencies.find((entry) => entry.id === currencyId) ?? currencies[0];
   const displayAmountInPaise =
     mode === 'plan' ? currency.plans[planIndex].priceInPaise : quantity * currency.priceInPaise;
 
@@ -23,7 +48,7 @@ function BuyCredits() {
     setError(null);
     try {
       const url = await buyCredits(
-        mode === 'plan' ? { currencyId, planIndex } : { currencyId, quantity },
+        mode === 'plan' ? { currencyId: currencyId!, planIndex } : { currencyId: currencyId!, quantity },
       );
       window.location.href = url;
     } catch {
@@ -46,7 +71,7 @@ function BuyCredits() {
             setPlanIndex(0);
           }}
         >
-          {CURRENCY_CATALOG.map((entry) => (
+          {currencies.map((entry) => (
             <option key={entry.id} value={entry.id}>
               {entry.name}
             </option>

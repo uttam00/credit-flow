@@ -1,13 +1,12 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { signup } from '../services/auth';
+import { useAuth } from '../hooks/useAuth';
 
 function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const navigate = useNavigate();
+  const { signup } = useAuth();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -15,7 +14,6 @@ function Signup() {
     setSubmitting(true);
     try {
       await signup(email, password);
-      navigate('/login');
     } catch {
       setError('Could not create an account with that email');
     } finally {

@@ -37,6 +37,12 @@ StripeEvent.init(
     data: {
       type: DataTypes.JSON,
       allowNull: false,
+      // See Currency.plans: MariaDB's JSON columns come back as a raw
+      // string, not auto-parsed like on MySQL 8.
+      get(this: StripeEvent): Record<string, unknown> {
+        const raw = this.getDataValue('data');
+        return typeof raw === 'string' ? (JSON.parse(raw) as Record<string, unknown>) : raw;
+      },
     },
     processed: {
       type: DataTypes.BOOLEAN,

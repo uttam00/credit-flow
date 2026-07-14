@@ -40,6 +40,15 @@ Currency.init(
     plans: {
       type: DataTypes.JSON,
       allowNull: false,
+      // MariaDB's JSON type is a LONGTEXT alias under a CHECK(JSON_VALID())
+      // constraint, not a native JSON type like MySQL 8's — mysql2 doesn't
+      // know to auto-parse it, so it comes back as a raw JSON string. Real
+      // MySQL 8 already returns a parsed value here, so guard on typeof
+      // rather than assuming either behavior.
+      get(this: Currency): CurrencyPlan[] {
+        const raw = this.getDataValue('plans');
+        return typeof raw === 'string' ? (JSON.parse(raw) as CurrencyPlan[]) : raw;
+      },
     },
     createdAt: DataTypes.DATE,
   },
