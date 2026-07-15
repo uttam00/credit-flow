@@ -1,5 +1,5 @@
 import { describe, test, expect, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { renderWithProviders } from '../test/renderWithProviders';
 import Wallet from './Wallet';
 
@@ -21,8 +21,15 @@ describe('Wallet', () => {
 
     renderWithProviders(<Wallet />, '/wallet');
 
-    await waitFor(() => expect(screen.getByText(/campaign credits: 250 credits/i)).toBeInTheDocument());
-    expect(screen.getByText(/report credits: 40 credits/i)).toBeInTheDocument();
-    expect(screen.getByText(/discovery credits: 0 credits/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('balance-card-1')).toBeInTheDocument());
+
+    expect(within(screen.getByTestId('balance-card-1')).getByText('Campaign Credits')).toBeInTheDocument();
+    expect(within(screen.getByTestId('balance-card-1')).getByText('250')).toBeInTheDocument();
+
+    expect(within(screen.getByTestId('balance-card-2')).getByText('Report Credits')).toBeInTheDocument();
+    expect(within(screen.getByTestId('balance-card-2')).getByText('40')).toBeInTheDocument();
+
+    expect(within(screen.getByTestId('balance-card-3')).getByText('Discovery Credits')).toBeInTheDocument();
+    expect(within(screen.getByTestId('balance-card-3')).getByText('0')).toBeInTheDocument();
   });
 });

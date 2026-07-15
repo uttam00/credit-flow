@@ -1,4 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
 
 type ToastVariant = 'error' | 'info';
 
@@ -31,9 +34,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const showToast = useCallback((message: string, variant: ToastVariant = 'error') => {
     const id = nextToastId++;
     setToasts((current) => [...current, { id, message, variant }]);
-    setTimeout(() => {
-      setToasts((current) => current.filter((toast) => toast.id !== id));
-    }, 5000);
+  }, []);
+
+  const dismissToast = useCallback((id: number) => {
+    setToasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
 
   useEffect(() => {
@@ -46,35 +50,24 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div
-        role="status"
-        aria-live="polite"
-        style={{
-          position: 'fixed',
-          bottom: 16,
-          right: 16,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8,
-          zIndex: 1000,
-        }}
+      <Stack
+        spacing={1}
+        sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: (t) => t.zIndex.snackbar }}
       >
         {toasts.map((toast) => (
-          <div
+          <Snackbar
             key={toast.id}
-            style={{
-              background: toast.variant === 'error' ? '#fee2e2' : '#e0f2fe',
-              color: '#111827',
-              border: '1px solid #d1d5db',
-              borderRadius: 4,
-              padding: '8px 12px',
-              minWidth: 220,
-            }}
+            open
+            autoHideDuration={5000}
+            onClose={() => dismissToast(toast.id)}
+            sx={{ position: 'static' }}
           >
-            {toast.message}
-          </div>
+            <Alert severity={toast.variant} variant="filled" onClose={() => dismissToast(toast.id)}>
+              {toast.message}
+            </Alert>
+          </Snackbar>
         ))}
-      </div>
+      </Stack>
     </ToastContext.Provider>
   );
 }
